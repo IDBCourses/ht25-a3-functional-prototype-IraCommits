@@ -3,21 +3,62 @@
  *
  */
 
-import * as Util from "./util.js";
+import * as Util from "../../util.js";
 
-// State variables are the parts of your program that change over time.
-
-// Settings variables should contain all of the "fixed" parts of your programs
+let size = 100;
+let timeoutID = null;
 
 // Code that runs over and over again
 function loop() {
-
+  Util.setSize(size);
   window.requestAnimationFrame(loop);
+}
+
+function grow() {
+  size *= 1.01;
+  timeoutID = setTimeout(grow, 10);
+}
+
+function shrink() {
+  if (size >= 100) {
+    size *= 0.99;
+  }
+
+  timeoutID = setTimeout(shrink, 50);
 }
 
 // Setup is run once, at the start of the program. It sets everything up for us!
 function setup() {
-  // Put your event listener code here
+  timeoutID = setTimeout(shrink, 10);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.code == "KeyB" && !event.repeat) {
+      console.log(
+        `Key Down - Code ${event.code} | Keycode ${event.keyCode} | Key ${
+          event.key
+        } | Repeat ${event.repeat ? "" : "not"}`
+      );
+
+      if (timeoutID != null) {
+        clearTimeout(timeoutID);
+      }
+
+      timeoutID = setTimeout(grow, 10);
+    }
+  });
+
+  document.addEventListener("keyup", (event) => {
+    if (event.code == "KeyB" && !event.repeat) {
+      console.log(
+        `Key Up - Code ${event.code} | Keycode ${event.keyCode} | Key ${
+          event.key
+        } | Repeat ${event.repeat ? "" : "not"}`
+      );
+
+      clearTimeout(timeoutID);
+      timeoutID = setTimeout(shrink, 40);
+    }
+  });
 
   window.requestAnimationFrame(loop);
 }
