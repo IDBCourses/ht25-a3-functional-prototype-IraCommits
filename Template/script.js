@@ -3,7 +3,7 @@
  *
  */
 
-import * as Util from "../../util.js";
+import * as Util from "./util.js";
 
 let size = 100;
 let timeoutID = null;
