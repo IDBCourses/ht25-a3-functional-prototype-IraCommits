@@ -35,23 +35,6 @@ body {
   position: relative;
 }
 
-.circle {
-  border-radius: 50%;
-  background-color: #ff00ff;
-}
-
-.player {
-  background: greenyellow;
-}
-
-.food {
-  background: greenyellow;
-  width: 100px;
-  height: 100px;
-  background-color: greenyellow;
-  box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 40px #39ff14,
-    0 0 80px #39ff14;
-}
 
 .msg {
   position: fixed;
