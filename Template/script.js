@@ -11,11 +11,13 @@ const circles = [];
 // Swipe keys
 let previousKey = null;
 let currentKey = null;
-const row = ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY"];
+const quertyKeys = ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY"];
+
 // Player's state
 let hue = 55; // yellow
-let size = 120; //player's size, starts smaller so growth is visible
+let size = 250; //player's initial size
 let timeoutID = null; //timer id
+let resetKeysTimeoutID = null; // timer for reseting keys
 let playerX = (game.clientWidth - size) / 2; // players position from left to center
 let playerY = (game.clientHeight - size) / 2; // players's podition from top to center
 let score = 0; // number of circles eaten
@@ -36,12 +38,17 @@ scoreEl.textContent = `Score: ${score}`;
 document.body.appendChild(scoreEl);
 
 // HELPERS
+function resetKeys() {
+  previousKey = null;
+  currentKey = null;
+}
+
 function clamp(v, min, max) {
   //sets max & min limits for v
   return Math.max(min, Math.min(max, v));
 }
 
-function playerRect() {
+function playerRectangle() {
   //player obj, position, size
   return { x: playerX, y: playerY, size };
 }
@@ -80,10 +87,8 @@ function spawnCircles(count = 15) {
     const size = Math.random() * 45 + 30;
     circle.style.width = `${size}px`;
     circle.style.height = `${size}px`;
-    circle.style.borderRadius = "50%";
-    circle.style.position = "absolute";
 
-    // random horizontal start position (X), start at random Y inside game
+    // random horizontal start position X, start at random Y position inside game container
     const maxX = game.clientWidth - size;
     const maxY = game.clientHeight - size;
     const x = Math.random() * maxX;
@@ -91,20 +96,20 @@ function spawnCircles(count = 15) {
     circle.style.left = `${x}px`;
     circle.style.top = `${y}px`;
 
-    // vertical movement only (up and down) // each circle gets random speed (0.5–3 px per frame)
+    // vertical (Y) movement only, deltaY
+    // each circle gets random speed (0.5–3 px per frame) along Y-axis
     const dy = (Math.random() * 2.5 + 0.5) * (Math.random() < 0.5 ? 1 : -1);
-    const dx = 0; // no side movement
 
-    // save circle info to array
-    circles.push({ el: circle, x, y, dx, dy, size });
+    // save circle info for array
+    circles.push({ el: circle, x, y, dy, size });
   }
 
-  // animation loop
-  function animate() {
+  // animation loop for circles  
+  function animateCircles() {
     const height = game.clientHeight;
 
     circles.forEach((c) => {
-      // move only on Y
+      // move only on Y-axis
       c.y += c.dy;
 
       // bounce vertically (top and bottom walls)
@@ -117,19 +122,19 @@ function spawnCircles(count = 15) {
       c.el.style.top = `${c.y}px`;
     });
 
-    requestAnimationFrame(animate); //keeps circles moving (animation loop)
+    requestAnimationFrame(animateCircles); // keeps circles moving (animation loop)
   }
 
-  animate();
+  animateCircles();
 }
 
 //  SWIPE MOVEMENT
 // checks which way player swiped (left or right)
 function swipeDirection() {
-  const prevIndex = row.indexOf(previousKey);
-  const currIndex = row.indexOf(currentKey);
+  const prevIndex = quertyKeys.indexOf(previousKey);
+  const currIndex = quertyKeys.indexOf(currentKey);
 
-  if (currIndex < 0 || prevIndex < 0) return 0; //no move
+  if (currIndex < 0 || prevIndex < 0) return 0; // no move
   if (currIndex > prevIndex) return 1; // right
   if (currIndex < prevIndex) return -1; // left
   return 0;
@@ -137,7 +142,7 @@ function swipeDirection() {
 
 // moves player in given direction
 function movePlayer(direction) {
-  const step = 35; // how far to move
+  const step = 50; // how far to move
   playerX += direction * step; //update position
   playerX = clamp(playerX, 0, game.clientWidth - size); // stay inside screen
   Util.setPositionPixels(playerX, playerY); //apply new position
@@ -186,8 +191,9 @@ function catchCircle(player) {
     }
   }
 }
+
 function updateHueBySize() {
-  const criticalSize = 50; // when size = 50 then hue = 0 (red)
+  const criticalSize = 25; // when size = 50 then hue = 0 (red)
   const maxSize = maxPlayerSize(); // when size =  biggest player size  → hue = 55 (yellow)
 
   const ratio = Math.max(
@@ -201,13 +207,13 @@ function updateHueBySize() {
 function shrink() {
   if (gameEnded) return;
   if (size > 1) {
-    size *= 0.99; // gradually decreases
+    size *= 0.996; // gradually decreases
     updateHueBySize();
     Util.setSize(size);
     Util.setColour(hue, 100, 50, 1);
     const player = document.getElementById("thing0");
     player.style.boxShadow = `0 0 20px hsl(${hue}, 100%, 50%), 0 0 40px hsl(${hue}, 100%, 50%)`; //of the player color
-    timeoutID = setTimeout(shrink, 60);
+    timeoutID = setTimeout(shrink, 25);
   } else {
     size = 0;
     Util.setSize(size);
@@ -232,7 +238,7 @@ function loop() {
 function setup() {
   Util.setColour(hue, 100, 50, 1); // set the player's initial yellow color
 
-  timeoutID = setTimeout(shrink, 1500); // after  1.5s  the player starts to shrink
+  timeoutID = setTimeout(shrink, 60); // after  1.5s  the player starts to shrink
 
   document.addEventListener("keydown", (event) => {
     previousKey = currentKey;
@@ -244,7 +250,7 @@ function setup() {
 
     // catch with KeyC
     if (event.code === "KeyC" && !event.repeat) {
-      catchCircle(playerRect());
+      catchCircle(playerRectangle());
     }
 
     // restart with Space
@@ -252,14 +258,17 @@ function setup() {
       restartGame();
     }
 
+   if (direction !== 0) {
     if (timeoutID != null) {
-      //stop timer
       clearTimeout(timeoutID);
     }
-
-    timeoutID = setTimeout(shrink, 25); //start shrink again
+    timeoutID = setTimeout(shrink, 60);
+  }
+});
+  document.addEventListener("keyup", (e) => {
+    resetKeysTimeoutID = setTimeout(resetKeys, 1000);
   });
-
+  
   spawnCircles(30);
 
   window.requestAnimationFrame(loop); //start game loop
