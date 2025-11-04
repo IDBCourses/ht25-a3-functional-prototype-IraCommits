@@ -4,6 +4,7 @@
  * @type {HTMLElement|null}
  */
 export const thing = document.querySelector("#thing0");
+const container = document.getElementById("game");
 
 const state = {
   // store x/y in pixels (initialized to center of window)
@@ -39,7 +40,7 @@ export function setColour(h, s = 100, l = 50, a = 1, element = thing) {
   state.lightness = l;
   state.opacity = a;
   if (element != null) {
-    element.style.backgroundColor = `hsl(${ h }, ${ s }%, ${ l }%, ${ a })`;
+    element.style.backgroundColor = `hsl(${h}, ${s}%, ${l}%, ${a})`;
   }
 }
 
@@ -57,14 +58,14 @@ export function setColour(h, s = 100, l = 50, a = 1, element = thing) {
  */
 export function setPosition(x, y, element = thing) {
   // x and y are fractions of the window size (0..1). Convert to pixels
-  const w = window.innerWidth || 1;
-  const h = window.innerHeight || 1;
+  const w = container ? container.clientWidth : window.innerWidth;
+  const h = container ? container.clientHeight : window.innerHeight;
 
   state.x = x * w;
   state.y = y * h;
 
   if (element != null) {
-    element.style.translate = `${ state.x }px ${ state.y }px`;
+    element.style.translate = `${state.x}px ${state.y}px`;
   }
 }
 
@@ -82,7 +83,7 @@ export function setPositionPixels(px, py, element = thing) {
   state.y = py;
 
   if (element != null) {
-    element.style.translate = `${ state.x }px ${ state.y }px`;
+    element.style.translate = `${state.x}px ${state.y}px`;
   }
 }
 
@@ -102,7 +103,7 @@ export function setPositionPixels(px, py, element = thing) {
  */
 export function setSize(sizeOrWidth, height = null, element = thing) {
   const width = sizeOrWidth;
-  const h = (height === null) ? sizeOrWidth : height;
+  const h = height === null ? sizeOrWidth : height;
 
   // Update state width/height
   state.width = width;
@@ -110,8 +111,8 @@ export function setSize(sizeOrWidth, height = null, element = thing) {
 
   const target = element || thing;
   if (target != null) {
-    target.style.width = `${ width }px`;
-    target.style.height = `${ h }px`;
+    target.style.width = `${width}px`;
+    target.style.height = `${h}px`;
   }
 }
 
@@ -125,7 +126,7 @@ export function setSize(sizeOrWidth, height = null, element = thing) {
 export function setRotation(rotation, element = thing) {
   state.rotation = rotation;
   if (element != null) {
-    element.style.rotate = `${ rotation }deg`;
+    element.style.rotate = `${rotation}deg`;
   }
 }
 
@@ -141,7 +142,7 @@ export function setRoundedness(roundedness, element = thing) {
   state.roundedness = roundedness;
 
   if (element != null) {
-    element.style.borderRadius = `${ roundedness * 100 }%`;
+    element.style.borderRadius = `${roundedness * 100}%`;
   }
 }
 
@@ -181,7 +182,12 @@ export function createThing(id = null, className = "thing") {
 
   // Append to document body so it's visible by default. Styling should come
   // from the stylesheet (.thing or #thing) rather than inline defaults.
-  document.body.appendChild(el);
+
+  if (container) {
+    container.appendChild(el);
+  } else {
+    document.body.appendChild(el); // запасной вариант
+  }
 
   return el;
 }

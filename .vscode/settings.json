@@ -100,5 +100,6 @@
   "githubIssues.issueCompletions.enabled": false,
   "githubIssues.userCompletions.enabled": false,
   "githubPullRequests.codingAgent.autoCommitAndPush": true,
+  "liveServer.settings.port": 5502,
 
 }
