@@ -62,7 +62,7 @@ body {
 
 .thing {
   position: absolute;
-  border-radius: 50%; /* make it perfectly round */
+  border-radius: 50%; 
   background: rgba 0, 80, 200, 0.3;
   background: rgb(6, 40, 231);
   box-shadow: 0 0 20px rgb(1, 51, 77);
